@@ -1,0 +1,3 @@
+# Reactix
+
+An Actix template.

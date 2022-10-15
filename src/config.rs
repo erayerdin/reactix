@@ -27,6 +27,7 @@ pub struct Config {
     pub log_target: logging::LogTarget,
     #[serde(default = "Config::default_log_file")]
     pub log_file: Option<path::PathBuf>,
+    pub session_secret_key: String,
 }
 
 impl Config {

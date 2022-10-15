@@ -4,7 +4,9 @@
 
 use std::path;
 
-use actix_web::{web, App, HttpServer, Responder};
+use actix_identity::IdentityMiddleware;
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::{cookie::Key, web, App, HttpServer, Responder};
 use reactix::{
     config::{init_command, init_config},
     logging::init_logger,
@@ -33,6 +35,11 @@ async fn main() -> anyhow::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(server_config.clone()))
+            .wrap(IdentityMiddleware::default())
+            .wrap(SessionMiddleware::new(
+                CookieSessionStore::default(),
+                Key::from(server_config.session_secret_key.as_bytes()),
+            ))
             .service(hello)
     })
     .bind((config.host, config.port))?

@@ -5,8 +5,12 @@ edition = "2021"
 
 [dependencies]
 actix-web = { version = "4.2.1", features = ["rustls"] }
+anyhow = "1.0.65"
+chrono = { version = "0.4.22", features = ["serde"] }
 clap = { version = "4.0.15", features = ["cargo"] }
 dotenvy = "0.15.5"
 envy = "0.4.2"
+fern = "0.6.1"
 log = "0.4.17"
 serde = { version = "1.0.145", features = ["derive"] }
+thiserror = "1.0.37"

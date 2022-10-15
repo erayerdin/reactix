@@ -2,10 +2,13 @@
 // Use of this source code is governed by the WTFPL
 // license that can be found in the LICENSE file.
 
-use std::{io, path};
+use std::path;
 
 use actix_web::{web, App, HttpServer, Responder};
-use reactix::config::{init_command, init_config};
+use reactix::{
+    config::{init_command, init_config},
+    logging::init_logger,
+};
 
 #[actix_web::get("/")]
 async fn hello() -> impl Responder {
@@ -13,7 +16,7 @@ async fn hello() -> impl Responder {
 }
 
 #[actix_web::main]
-async fn main() -> io::Result<()> {
+async fn main() -> anyhow::Result<()> {
     log::debug!("Initializing server...");
 
     let cli_matches = init_command().get_matches();
@@ -21,14 +24,19 @@ async fn main() -> io::Result<()> {
         .get_one::<path::PathBuf>("env-file")
         .expect("Could not get `env-file` flag value.");
 
-    let config = init_config(dotenv_path).expect("Could not initialize Config.");
+    let config = init_config(dotenv_path)?;
     let server_config = config.clone(); // to move in HttpServer closure
 
+    init_logger(config.log_target.clone(), config.log_level, config.log_file)?;
+
+    log::info!("Running server on: http://{}:{}", config.host, config.port);
     HttpServer::new(move || {
-        let config = server_config.clone(); // fails if not clone, because server_config drops at the end of closure
-        App::new().app_data(web::Data::new(config)).service(hello)
+        App::new()
+            .app_data(web::Data::new(server_config.clone()))
+            .service(hello)
     })
     .bind((config.host, config.port))?
     .run()
     .await
+    .map_err(|err| anyhow::anyhow!("An error occured while running the server. {:?}", err))
 }

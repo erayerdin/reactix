@@ -8,4 +8,11 @@ extern crate actix_web;
 #[macro_use]
 extern crate serde;
 
+#[macro_use]
+extern crate anyhow;
+
+#[macro_use]
+extern crate thiserror;
+
 pub mod config;
+pub mod logging;

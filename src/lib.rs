@@ -14,5 +14,8 @@ extern crate anyhow;
 #[macro_use]
 extern crate thiserror;
 
+#[macro_use]
+extern crate actix_multipart_extract;
+
 pub mod config;
 pub mod logging;

@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 actix-identity = "0.5.2"
+actix-multipart-extract = "0.1.5"
 actix-session = { version = "0.7.2", features = ["cookie-session"] }
 actix-web = { version = "4.2.1", features = ["rustls"] }
 anyhow = "1.0.65"

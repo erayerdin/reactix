@@ -4,6 +4,8 @@
 
 use std::path;
 
+use actix_web::http::Method;
+
 use crate::logging;
 
 // TODO change env var prefix
@@ -28,6 +30,15 @@ pub struct Config {
     #[serde(default = "Config::default_log_file")]
     pub log_file: Option<path::PathBuf>,
     pub session_secret_key: String,
+    #[serde(default = "Config::default_throttle_burst_size")]
+    pub throttle_burst_size: u32,
+    #[serde(default = "Config::default_throttle_per_second")]
+    pub throttle_per_second: u64,
+    #[serde(
+        default = "Config::default_throttle_methods",
+        deserialize_with = "Config::string_to_methods"
+    )]
+    pub throttle_methods: Vec<Method>,
 }
 
 impl Config {
@@ -49,6 +60,28 @@ impl Config {
 
     fn default_log_file() -> Option<path::PathBuf> {
         None
+    }
+
+    fn default_throttle_burst_size() -> u32 {
+        5
+    }
+
+    fn default_throttle_per_second() -> u64 {
+        2
+    }
+
+    fn default_throttle_methods() -> Vec<Method> {
+        vec![
+            Method::OPTIONS,
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::HEAD,
+            Method::TRACE,
+            Method::CONNECT,
+            Method::PATCH,
+        ]
     }
 
     fn string_to_level_filter<'de, D>(deserializer: D) -> Result<log::LevelFilter, D::Error>
@@ -83,6 +116,40 @@ impl Config {
                 "Unknown log target. Targets are: crate, all",
             )),
         }
+    }
+
+    fn string_to_methods<'de, D>(deserializer: D) -> Result<Vec<Method>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let val: String = serde::Deserialize::deserialize(deserializer)?;
+
+        // match val.to_lowercase().as_str() {
+        //     "crate" => Ok(logging::LogTarget::Crate),
+        //     "all" => Ok(logging::LogTarget::All),
+        //     _ => Err(serde::de::Error::custom(
+        //         "Unknown log target. Targets are: crate, all",
+        //     )),
+        // }
+
+        val.split(',')
+            .map(|v| v.trim())
+            .map(|v| match v.to_lowercase().as_str() {
+                "options" => Ok(Method::OPTIONS),
+                "get" => Ok(Method::GET),
+                "post" => Ok(Method::POST),
+                "put" => Ok(Method::PUT),
+                "delete" => Ok(Method::DELETE),
+                "head" => Ok(Method::HEAD),
+                "trace" => Ok(Method::TRACE),
+                "connect" => Ok(Method::CONNECT),
+                "patch" => Ok(Method::PATCH),
+                val => Err(serde::de::Error::custom(format!(
+                    "Invalid HTTP method: {}",
+                    val
+                ))),
+            })
+            .collect()
     }
 }
 

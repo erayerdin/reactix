@@ -4,6 +4,7 @@
 
 use std::path;
 
+use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{cookie::Key, web, App, HttpServer, Responder};
@@ -30,11 +31,18 @@ async fn main() -> anyhow::Result<()> {
     let server_config = config.clone(); // to move in HttpServer closure
 
     init_logger(config.log_target.clone(), config.log_level, config.log_file)?;
+    let governor_conf = GovernorConfigBuilder::default()
+        .per_second(config.throttle_per_second)
+        .burst_size(config.throttle_burst_size)
+        .methods(config.throttle_methods)
+        .finish()
+        .expect("Could not build governor throttle configuration.");
 
     log::info!("Running server on: http://{}:{}", config.host, config.port);
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(server_config.clone()))
+            .wrap(Governor::new(&governor_conf))
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(
                 CookieSessionStore::default(),

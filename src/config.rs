@@ -39,6 +39,11 @@ pub struct Config {
         deserialize_with = "Config::string_to_methods"
     )]
     pub throttle_methods: Vec<Method>,
+    #[serde(default = "Config::default_db_pool_min_connections")]
+    pub db_pool_min_connections: u32,
+    #[serde(default = "Config::default_db_pool_max_connections")]
+    pub db_pool_max_connections: u32,
+    pub db_url: String,
 }
 
 impl Config {
@@ -82,6 +87,14 @@ impl Config {
             Method::CONNECT,
             Method::PATCH,
         ]
+    }
+
+    fn default_db_pool_min_connections() -> u32 {
+        0
+    }
+
+    fn default_db_pool_max_connections() -> u32 {
+        5
     }
 
     fn string_to_level_filter<'de, D>(deserializer: D) -> Result<log::LevelFilter, D::Error>

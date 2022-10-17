@@ -12,6 +12,7 @@ use reactix::{
     config::{init_command, init_config},
     logging::init_logger,
 };
+use sqlx::{postgres::PgPoolOptions, Connection, PgConnection};
 
 #[actix_web::get("/")]
 async fn hello() -> impl Responder {
@@ -38,10 +39,19 @@ async fn main() -> anyhow::Result<()> {
         .finish()
         .expect("Could not build governor throttle configuration.");
 
+    let db_pool = PgPoolOptions::new()
+        .min_connections(config.db_pool_min_connections)
+        .max_connections(config.db_pool_max_connections)
+        .connect_lazy(&config.db_url)?;
+
+    let mut migration_connection = PgConnection::connect(&config.db_url).await?;
+    sqlx::migrate!().run(&mut migration_connection).await?;
+
     log::info!("Running server on: http://{}:{}", config.host, config.port);
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(server_config.clone()))
+            .app_data(web::Data::new(db_pool.clone()))
             .wrap(Governor::new(&governor_conf))
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(

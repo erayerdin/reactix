@@ -17,4 +17,8 @@ envy = "0.4.2"
 fern = "0.6.1"
 log = "0.4.17"
 serde = { version = "1.0.145", features = ["derive"] }
+sqlx = { version = "0.6.2", features = ["postgres", "runtime-tokio-rustls"] }
 thiserror = "1.0.37"
+
+[build-dependencies]
+dotenvy = "0.15.5"

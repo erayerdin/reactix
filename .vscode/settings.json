@@ -7,7 +7,10 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "target": true,
-        "**/*.lock": true
+        "**/*.lock": true,
+        "**/node_modules": true,
+        "frontend/build": true,
+        "frontend/package-lock.json": true
     },
     "explorerExclude.backup": {},
     "licenser.license": "WTFPL",

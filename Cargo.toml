@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+actix-files = "0.6.2"
 actix-governor = { version = "0.3.2", features = ["log"] }
 actix-identity = "0.5.2"
 actix-multipart-extract = "0.1.5"

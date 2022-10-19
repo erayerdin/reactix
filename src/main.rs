@@ -58,7 +58,9 @@ async fn main() -> anyhow::Result<()> {
                 CookieSessionStore::default(),
                 Key::from(server_config.session_secret_key.as_bytes()),
             ))
-            .service(hello)
+            // TODO add your other routes here instead of below static files
+            // otherwise, they overshadow the url for static files, thus react
+            .service(actix_files::Files::new("/", "frontend/build").index_file("index.html"))
     })
     .bind((config.host, config.port))?
     .run()

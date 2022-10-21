@@ -1600,7 +1600,7 @@ dependencies = [
 
 [[package]]
 name = "reactix"
-version = "0.1.0"
+version = "2022.10.22"
 dependencies = [
  "actix-files",
  "actix-governor",
